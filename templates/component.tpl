@@ -1,4 +1,4 @@
-import { ApptComponent } from '@appt/core';
+import { Component } from '@appt/core';
 
-@ApptComponent()
+@Component()
 export class <componentName>(){}

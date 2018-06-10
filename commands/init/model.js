@@ -79,6 +79,31 @@ function checkProjectsRoot(projectsPath) {
    })
 }
 
+function chooseNodemon(package) {
+      return inquirer.prompt({
+            type: 'confirm',
+            name: 'nodemon',
+            message: 'Do you want to add nodemon to your devDependencies?',
+            default: true
+      })
+      .then(chosen => {
+            let nodemon = {};
+
+            if(chosen.nodemon){
+                  nodemon = {
+                        "nodemon": "^1.17.5"
+                  }
+            }
+
+            return Object.assign({
+                  "babel-cli": "^6.26.0",
+                  "babel-preset-es2015": "^6.24.1",
+                  "rimraf": "^2.6.2",
+                  "babel-plugin-transform-decorators-legacy": "^1.3.4"
+            }, nodemon);
+      });
+}
+
 function getPackageDependencies(package) {
       return inquirer.prompt({
             type: 'checkbox',
@@ -92,27 +117,25 @@ function getPackageDependencies(package) {
       })
       .then(chosen => {
             const all = {
-                  "@appt/api": "^1.0.19",                  
-                  "@appt/mongoose": "^1.0.20"
+                  "@appt/api": "^1.0.21",                  
+                  "@appt/mongoose": "^1.0.21"
             };
 
             const dependencies = Object.keys(all).reduce((prev, crr) => {
                   const choice = chosen.dependencies.find(dep => dep === crr);
                   return Object.assign(prev, { [choice]: all[choice] })
             }, {
-                  "@appt/core": "^1.0.19"
+                  "@appt/core": "^1.0.22"
             });
 
             return Object.assign(package, {
-                  "dependencies": dependencies,
-                  "devDependencies": {
-                        "babel-cli": "^6.26.0",
-                        "babel-preset-es2015": "^6.24.1",
-                        "rimraf": "^2.6.2",
-                        "babel-plugin-transform-decorators-legacy": "^1.3.4"
-                  }
+                  "dependencies": dependencies
             });
-      });
+      })
+      .then(package => chooseNodemon(package))
+      .then(devDependencies => Object.assign(package, {
+            "devDependencies": devDependencies
+      }));
 }
 
 
@@ -240,31 +263,42 @@ function setPackageJson(git) {
       
       var mainModuleConfig = {};
 
-      return prompt.then(answers => {
-            mainModuleConfig = {
-                  projectsPath: git.projectsPath,
-                  moduleFileName: answers.mainFileName,
-                  moduleClassName: answers.mainClassName,
-                  dist: answers.dist,
-                  src: answers.src
+      return prompt.then(answers => getPackageDependencies(answers))
+      .then(package => {
+            let startScript = "npm run build && node " + package.dist + package.src + package.mainFileName;
+            let nodemonFlag = false;
+
+            if(package.devDependencies && package.devDependencies.nodemon){
+                  startScript = "nodemon --exec babel-node ./" + package.src + package.mainFileName;
+                  nodemonFlag = true;
             }
 
+            mainModuleConfig = {
+                  projectsPath: git.projectsPath,
+                  moduleFileName: package.mainFileName,
+                  moduleClassName: package.mainClassName,
+                  dist: package.dist,
+                  src: package.src,
+                  nodemon: nodemonFlag
+            }            
+
             return Object.assign({
-                  name: answers.name,
-                  version: answers.version,
-                  description: answers.description,
-                  author: answers.author,
-                  main: answers.dist + answers.src + answers.mainFileName,
+                  name: package.name,
+                  version: package.version,
+                  description: package.description,
+                  author: package.author,
+                  main: package.mainFileName,
                   scripts: {
-                        build: "rimraf " + answers.dist + " && babel ./ --out-dir " + answers.dist + " --ignore ./data/,./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
-                        start: "npm run build && node " + answers.dist + answers.src + answers.mainFileName
+                        start: startScript,
+                        build: "rimraf " + package.dist + " && babel ./ --out-dir " + package.dist + " --ignore ./data/,./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files"
                   },
-                  keywords: answers.keywords,
-                  license: answers.license
+                  keywords: package.keywords,
+                  license: package.license
             }, 
+            { dependencies: package.dependencies },
+            { devDependencies: package.devDependencies },
             git.info)
-      })
-      .then(package => getPackageDependencies(package))      
+      })            
       .then(package => {            
             const packageStringified = JSON.stringify(package, null, 4);      
 
@@ -407,7 +441,7 @@ function installDependencies(projectsPath) {
 
 function addMainModules(mainModuleConfig){      
       const spinner = ora('Adding main module...').start();
-
+      
       return file.read(config.paths.templates + '/main.module.tpl')
             .then(function(mainModule) {
                   return mainModule
@@ -422,7 +456,7 @@ function addMainModules(mainModuleConfig){
             .then(function(mainModule) {
                   return mainModule
                         .toString()
-                        .replace('<dist>', mainModuleConfig.dist)
+                        .replace('<dist>', mainModuleConfig.nodemon ? '' : mainModuleConfig.dist)
                         .replace('<src>', mainModuleConfig.src);
             })
             .then(moduleContent => file.write({

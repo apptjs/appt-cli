@@ -1,12 +1,12 @@
 import { 
-   ApptModule, 
+   Module, 
    ApptBootstrap 
 } from '@appt/core';
 
-@ApptModule()
+@Module()
 export class <className> {
    constructor(){
-      console.log('Appt is up!')
+      console.log('Appt is running!')
    }
 }
 

@@ -1,0 +1,45 @@
+{
+  "name": "appt-crud",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "options": [{
+    "name": "Basic",
+    "prefix": true,
+    "groups": [{
+      "name": "component",
+      "src": ["./basic/module", "./basic/controller", "./basic/router"],
+      "prefix_on": ["name", "dest"],
+      "dest": "src/components"
+    }, {
+      "name": "model",      
+      "src": ["./basic/model"],
+      "optional": true,
+      "prefix_on": ["name"],
+      "dest": "src/models"
+    }, {
+      "name": "schema",      
+      "src": ["./basic/schema"],
+      "optional": true,
+      "prefix_on": ["name"],
+      "dest": "src/schemas"
+    }]
+  }, {
+    "name": "Upload",    
+    "groups": [{
+      "name": "component",
+      "src": ["./module", "./controller", "./router"]
+    }, {
+      "name": "model",
+      "optional": true,
+      "src": ["./model"]
+    }, {
+      "name": "schema",
+      "optional": true,
+      "src": ["./schema"]
+    }],
+    "dependencies": {
+      "multer": "^1.3.0"
+    }
+  }]
+}

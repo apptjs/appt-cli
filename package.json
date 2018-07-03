@@ -18,8 +18,11 @@
   },
   "homepage": "https://github.com/brab0/appt-cli#readme",
   "dependencies": {
+    "case": "^1.5.5",
+    "clear": "^0.1.0",
     "download-git-repo": "^1.0.2",
     "remote-origin-url": "^1.0.0",
+    "require-files": "0.0.4",
     "schemium-api": "0.0.6"
   },
   "bin": {

@@ -13,3 +13,11 @@ module.exports.init = options => {
       .then(() => console.log('\nYour project is ready!\n'))
       .catch(ex => console.log(ex));
 }
+
+module.exports.add = options => {   
+      if(options.module){
+            model.addModule(options)
+      } else {
+            model.addComponent(options)
+      }
+}

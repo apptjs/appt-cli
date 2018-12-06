@@ -91,7 +91,7 @@ function chooseNodemon(package) {
 
             if(chosen.nodemon){
                   nodemon = {
-                        "nodemon": "^1.17.5"
+                        "nodemon": "^1.18.4"
                   }
             }
 
@@ -117,15 +117,15 @@ function getPackageDependencies(package) {
       })
       .then(chosen => {
             const all = {
-                  "@appt/api": "^1.0.21",                  
-                  "@appt/mongoose": "^1.0.21"
+                  "@appt/api": "^1.0.25",
+                  "@appt/mongoose": "^1.0.34",
             };
 
             const dependencies = Object.keys(all).reduce((prev, crr) => {
                   const choice = chosen.dependencies.find(dep => dep === crr);
                   return Object.assign(prev, { [choice]: all[choice] })
             }, {
-                  "@appt/core": "^1.0.22"
+                  "@appt/core": "^1.0.31"
             });
 
             return Object.assign(package, {
@@ -268,7 +268,7 @@ function setPackageJson(git) {
             let startScript = "npm run build && node " + package.dist + package.src + package.mainFileName;
             let nodemonFlag = false;
 
-            if(package.devDependencies && package.devDependencies.nodemon){
+            if(package.devDependencies && package.devDependencies.nodemon){                  
                   startScript = "nodemon --exec babel-node ./" + package.src + package.mainFileName;
                   nodemonFlag = true;
             }
@@ -297,7 +297,7 @@ function setPackageJson(git) {
             }, 
             { dependencies: package.dependencies },
             { devDependencies: package.devDependencies },
-            git.info)
+            git.info);
       })            
       .then(package => {            
             const packageStringified = JSON.stringify(package, null, 4);      

@@ -1,7 +1,4 @@
-import { 
-   Module, 
-   ApptBootstrap 
-} from '@appt/core';
+import { Module } from '@appt/core';
 
 @Module()
 export class <className> {
@@ -9,5 +6,3 @@ export class <className> {
       console.log('Appt is running!')
    }
 }
-
-ApptBootstrap.module('<className>');
